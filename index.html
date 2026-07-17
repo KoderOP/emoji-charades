@@ -191,7 +191,7 @@
     font-weight: 600;
     font-size: 14.5px;
     color: var(--ivory);
-    background: rgba(253,243,231,0.05);
+    background: rgba(82, 68, 52, 0.142);
     border: 1px solid rgba(253,243,231,0.18);
     border-radius: 10px;
     padding: 10px 16px;
@@ -256,6 +256,7 @@
   .pass-box, .result-box {
     text-align: center;
     padding: 10px 4px 6px;
+    position: relative;
   }
 
   .pass-box .icon, .result-box .icon {
@@ -263,8 +264,61 @@
     margin-bottom: 6px;
   }
 
+  .hint-line {
+    font-family: 'Mukta', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-align: center;
+    margin: 0 0 12px;
+    word-spacing: 6px;
+  }
 
+  .hint-note {
+    font-size: 13px;
+    color: var(--ivory-dim);
+    text-align: center;
+    margin: 0 0 12px;
+  }
 
+  .confetti-zone {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .confetti-piece {
+    position: absolute;
+    top: -12px;
+    width: 8px;
+    height: 14px;
+    border-radius: 2px;
+    opacity: 0.95;
+    animation-name: confetti-fall;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(220px) rotate(340deg); opacity: 0; }
+  }
+
+  @keyframes result-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(3px); }
+  }
+
+  .result-box.shake { animation: result-shake 0.4s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .confetti-piece { animation: none; opacity: 0; }
+    .result-box.shake { animation: none; }
+  }
 
   .screen-display {
     background: radial-gradient(circle at 50% 40%, rgba(255,201,60,0.08), var(--bg-deep) 70%);
@@ -315,7 +369,7 @@
     text-align: center;
     margin-top: 28px;
     font-size: 12px;
-    color: rgba(251,241,221,0.35);
+    color: rgb(255, 178, 24);
   }
 
   @media (max-width: 480px) {
@@ -380,7 +434,7 @@ function renderScoreboard(){
   if (state.phase === "players") { el.innerHTML = ""; return; }
   el.innerHTML = state.players.map((p, i) => `
     <div class="score-card ${i === setterIdx() && state.phase !== 'result' ? 'active' : ''}">
-      <p class="name">${escapeHtml(p)}${i === setterIdx() && state.phase !== 'result' ? ' &middot; setting' : ''}</p>
+      <p class="name">${escapeHtml(p)}</p>
       <p class="points">${state.scores[i]}</p>
     </div>
   `).join("");
@@ -468,6 +522,61 @@ function renderPass(){
   document.getElementById("ready-btn").onclick = () => { state.phase = "guess"; render(); };
 }
 
+function playTone(freqs, duration, type){
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + i * 0.09 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.09 + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.09);
+      osc.stop(ctx.currentTime + i * 0.09 + duration + 0.05);
+    });
+  } catch (err) { /* audio not available, fail silently */ }
+}
+
+function playCorrectSound(){ playTone([523.25, 659.25, 783.99, 1046.5], 0.28, "sine"); }
+function playWrongSound(){ playTone([220, 164.81], 0.3, "sawtooth"); }
+
+function launchConfetti(container){
+  const colors = ["#FFC93C", "#E63950", "#C2185B", "#FDF3E7"];
+  for (let i = 0; i < 36; i++){
+    const piece = document.createElement("span");
+    piece.className = "confetti-piece";
+    piece.style.left = Math.random() * 100 + "%";
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.25) + "s";
+    piece.style.animationDuration = (1.1 + Math.random() * 0.6) + "s";
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    container.appendChild(piece);
+  }
+  setTimeout(() => { container.innerHTML = ""; }, 2200);
+}
+
+function buildHint(title, tries){
+  if (tries === 1) {
+    const wordCount = title.trim().split(/\s+/).length;
+    return { type: "note", text: `${wordCount} word${wordCount > 1 ? "s" : ""}` };
+  }
+  const chars = title.split("");
+  const alnumIndices = [];
+  chars.forEach((ch, i) => { if (/[a-zA-Z0-9]/.test(ch)) alnumIndices.push(i); });
+  const firstIdx = alnumIndices[0];
+  const lastIdx = alnumIndices[alnumIndices.length - 1];
+  const pattern = chars.map((ch, i) => {
+    if (ch === " ") return " ";
+    if (!/[a-zA-Z0-9]/.test(ch)) return ch;
+    return (i === firstIdx || i === lastIdx) ? ch : "_";
+  }).join(" ");
+  return { type: "pattern", text: pattern };
+}
+
 function renderGuess(){
   const stage = document.getElementById("stage");
   const triesLeft = MAX_TRIES - state.tries;
@@ -477,6 +586,12 @@ function renderGuess(){
       <span>${escapeHtml(state.players[guesserIdx()])}, name that movie</span>
       <span class="tries-left">${triesLeft} ${triesLeft === 1 ? 'try' : 'tries'} left</span>
     </div>
+    ${state.tries > 0 ? (() => {
+      const hint = buildHint(state.current.t, state.tries);
+      return hint.type === "note"
+        ? `<p class="hint-note">Hint: ${escapeHtml(hint.text)}</p>`
+        : `<p class="hint-line">${escapeHtml(hint.text)}</p>`;
+    })() : ""}
     ${state.lastWrongGuess ? `<p class="wrong-note">"${escapeHtml(state.lastWrongGuess)}" wasn't it</p>` : ""}
     <input type="text" id="guess-input" placeholder="Movie title" />
     <div class="action-row">
@@ -506,6 +621,7 @@ function finishRound(correct){
   if (correct) state.scores[guesserIdx()] += 1;
   state.lastWrongGuess = "";
   state.phase = "result";
+  if (correct) playCorrectSound(); else playWrongSound();
   render();
 }
 
@@ -513,13 +629,15 @@ function renderResult(){
   const stage = document.getElementById("stage");
   const winnerName = state.players[guesserIdx()];
   stage.innerHTML = `
-    <div class="result-box">
+    <div class="result-box ${state.lastCorrect ? '' : 'shake'}">
+      <div class="confetti-zone" id="confetti-zone"></div>
       <div class="icon ${state.lastCorrect ? 'status-correct' : 'status-wrong'}">${state.lastCorrect ? '✅' : '❌'}</div>
       <p class="lead">${state.lastCorrect ? escapeHtml(winnerName) + " got it right" : "Out of tries"}</p>
       <p class="result-title">${escapeHtml(state.current.t)}</p>
       <button class="primary" id="next-round">Next round</button>
     </div>
   `;
+  if (state.lastCorrect) launchConfetti(document.getElementById("confetti-zone"));
   document.getElementById("next-round").onclick = () => {
     state.turnPointer = (state.turnPointer + 1) % numPlayersCount();
     state.current = null;
