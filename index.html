@@ -9,41 +9,64 @@
 <meta name="description" content="A two-to-six player pass-and-play game: turn a Bollywood movie into an emoji sequence and see who can guess it in three tries." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-deep: #1B0E08;
-    --bg-card: #241409;
-    --gold: #F2B705;
-    --gold-dim: #C99A2E;
-    --vermillion: #C8102E;
-    --ivory: #FBF1DD;
-    --ivory-dim: #C9BBA0;
+    --bg-deep: #200610;
+    --bg-card: #34091A;
+    --gold: #FFC93C;
+    --gold-dim: #D9A441;
+    --vermillion: #E63950;
+    --magenta: #C2185B;
+    --ivory: #FDF3E7;
+    --ivory-dim: #DCC3AE;
     --teal: #2E7D6B;
     --bronze: #9C6B30;
     --radius: 14px;
   }
+
 
   * { box-sizing: border-box; }
 
   html, body {
     margin: 0;
     padding: 0;
-    background: var(--bg-deep);
-    background-image:
-
-      radial-gradient(circle at 15% 10%, rgba(242,183,5,0.07), transparent 40%),
-      radial-gradient(circle at 85% 90%, rgba(200,16,46,0.08), transparent 40%);
-
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(255,201,60,0.16), transparent 60%),
+      radial-gradient(circle at 10% 15%, rgba(226,57,80,0.16), transparent 45%),
+      radial-gradient(circle at 90% 85%, rgba(194,24,91,0.18), transparent 45%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px),
+      var(--bg-deep);
     color: var(--ivory);
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Mukta', sans-serif;
     min-height: 100vh;
+  }
+
+  .filmstrip {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 26px;
+    background-color: #120209;
+    background-image: radial-gradient(circle, var(--bg-deep) 5px, transparent 5.5px);
+    background-size: 26px 34px;
+    background-position: center;
+    z-index: 0;
+    opacity: 0.9;
+  }
+  .filmstrip.left { left: 0; }
+  .filmstrip.right { right: 0; }
+
+  @media (max-width: 820px) {
+    .filmstrip { display: none; }
   }
 
   .wrap {
     max-width: 720px;
     margin: 0 auto;
     padding: 32px 20px 64px;
+    position: relative;
+    z-index: 1;
   }
 
   header {
@@ -57,19 +80,19 @@
     content: "";
     position: absolute;
     left: 0; right: 0;
-    height: 1px;
-    background-image: radial-gradient(circle, var(--gold) 1.5px, transparent 1.6px);
-    background-size: 18px 1px;
+    height: 3px;
+    background-image: radial-gradient(circle, var(--gold) 2px, transparent 2.2px);
+    background-size: 20px 3px;
     background-repeat: repeat-x;
-    opacity: 0.75;
-    animation: twinkle 2.2s ease-in-out infinite alternate;
+    opacity: 0.8;
+    animation: twinkle 1.6s ease-in-out infinite alternate;
   }
   header::before { top: 0; }
-  header::after { bottom: 0; }
+  header::after { bottom: 0; animation-delay: 0.4s; }
 
   @keyframes twinkle {
-    from { opacity: 0.35; }
-    to { opacity: 0.9; }
+    from { opacity: 0.3; filter: brightness(0.85); }
+    to { opacity: 1; filter: brightness(1.3); }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -77,19 +100,23 @@
   }
 
   h1 {
-    font-family: 'Rozha One', serif;
-    font-weight: 400;
-    font-size: clamp(28px, 6vw, 42px);
+    font-family: 'Baloo Bhaijaan 2', cursive;
+    font-weight: 800;
+    font-size: clamp(32px, 7vw, 50px);
     letter-spacing: 0.5px;
     color: var(--gold);
-    margin: 18px 0 6px;
-    text-shadow: 0 0 18px rgba(242,183,5,0.25);
+    margin: 22px 0 8px;
+    text-shadow:
+      0 0 22px rgba(255,201,60,0.45),
+      0 2px 0 rgba(230,57,80,0.5);
   }
 
   .subtitle {
+    font-family: 'Baloo Bhaijaan 2', cursive;
     color: var(--ivory-dim);
-    font-size: 14px;
-    letter-spacing: 0.6px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
     margin: 0;
   }
@@ -103,15 +130,16 @@
 
   .score-card {
     flex: 1 1 120px;
-    background: var(--bg-card);
-    border: 1px solid rgba(242,183,5,0.18);
+    background: linear-gradient(160deg, var(--bg-card), #2A0813);
+    border: 1px solid rgba(255,201,60,0.2);
     border-radius: var(--radius);
     padding: 12px 16px;
   }
 
   .score-card.active {
     border-color: var(--gold);
-    box-shadow: 0 0 0 1px var(--gold) inset;
+    border-width: 2px;
+    box-shadow: 0 0 0 1px var(--gold) inset, 0 0 16px rgba(255,201,60,0.35);
   }
 
   .score-card .name {
@@ -124,7 +152,8 @@
   }
 
   .score-card .points {
-    font-family: 'Rozha One', serif;
+    font-family: 'Baloo Bhaijaan 2', cursive;
+    font-weight: 700;
     font-size: 26px;
     color: var(--gold);
     margin: 0;
@@ -134,9 +163,10 @@
 
 
   .stage {
-    background: var(--bg-card);
+    background: linear-gradient(165deg, var(--bg-card), #2A0813 60%, #38091C);
     border-radius: 20px;
-    border: 1px solid rgba(242,183,5,0.15);
+    border: 1px solid rgba(255,201,60,0.18);
+    box-shadow: 0 0 0 1px rgba(194,24,91,0.08), 0 18px 40px rgba(0,0,0,0.35);
     padding: 28px 22px;
   }
 
@@ -157,37 +187,40 @@
   }
 
   button {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 500;
+    font-family: 'Mukta', sans-serif;
+    font-weight: 600;
     font-size: 14.5px;
     color: var(--ivory);
-    background: rgba(251,241,221,0.05);
-    border: 1px solid rgba(251,241,221,0.18);
+    background: rgba(253,243,231,0.05);
+    border: 1px solid rgba(253,243,231,0.18);
     border-radius: 10px;
     padding: 10px 16px;
     cursor: pointer;
     transition: all 0.15s ease;
   }
 
-  button:hover { background: rgba(242,183,5,0.12); border-color: var(--gold-dim); }
+  button:hover { background: rgba(255,201,60,0.12); border-color: var(--gold-dim); }
   button:active { transform: scale(0.98); }
   button.primary {
-    background: var(--gold);
-    color: #2A1904;
+    background: linear-gradient(135deg, var(--gold), #FFA53C);
+    color: #2A0813;
     border-color: var(--gold);
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(255,201,60,0.25);
   }
-  button.primary:hover { background: #FFC71F; }
-  button.selected { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+  button.primary:hover { background: linear-gradient(135deg, #FFD75C, #FFB65C); }
+  button.selected { border-color: var(--vermillion); box-shadow: 0 0 0 1px var(--vermillion) inset; color: var(--gold); }
   button.wide { width: 100%; }
+  #give-up { border-color: rgba(230,57,80,0.35); }
+  #give-up:hover { background: rgba(230,57,80,0.14); border-color: var(--vermillion); }
 
   input[type="text"] {
     width: 100%;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Mukta', sans-serif;
     font-size: 15px;
     color: var(--ivory);
-    background: rgba(251,241,221,0.05);
-    border: 1px solid rgba(251,241,221,0.2);
+    background: rgba(253,243,231,0.05);
+    border: 1px solid rgba(253,243,231,0.2);
     border-radius: 10px;
     padding: 11px 14px;
     margin-bottom: 10px;
@@ -234,8 +267,8 @@
 
 
   .screen-display {
-    background: var(--bg-deep);
-    border: 1px dashed rgba(242,183,5,0.35);
+    background: radial-gradient(circle at 50% 40%, rgba(255,201,60,0.08), var(--bg-deep) 70%);
+    border: 1px dashed rgba(255,201,60,0.4);
     border-radius: 14px;
     padding: 36px 16px;
     text-align: center;
@@ -268,8 +301,9 @@
   .action-row { display: flex; gap: 8px; }
 
   .result-title {
-    font-family: 'Rozha One', serif;
-    font-size: 24px;
+    font-family: 'Baloo Bhaijaan 2', cursive;
+    font-weight: 700;
+    font-size: 26px;
     color: var(--gold);
     margin: 10px 0 20px;
   }
@@ -289,47 +323,37 @@
   }
 </style>
 </head>
+
+
 <body>
+
+<div class="filmstrip left" aria-hidden="true"></div>
+<div class="filmstrip right" aria-hidden="true"></div>
 <div class="wrap">
+
   <header>
     <h1>Emoji Charades</h1>
-    <p class="subtitle">A Bollywood guessing game, pass and play</p>
+    <p class="subtitle">Decode the emojis, defend your Bollywood honor</p>
   </header>
 
   <div class="scoreboard" id="scoreboard"></div>
   <div class="stage" id="stage"></div>
 
-  <footer>Built for movie nights &middot; three guesses per round</footer>
+  <footer>HAPPY EMOJI DAY😉 from Harshita(✿◡‿◡)</footer>
 </div>
 
 <script>
 const MOVIES = [
-  {t:"Lagaan", e:"🏏🌾👳‍♂️🇬🇧", a:[]},
-  {t:"3 Idiots", e:"🎓📚🤪🎓", a:["3idiots"]},
-  {t:"Toilet Ek Prem Katha", e:"🚽👆🏻❤️🧾", a:[]},
-  {t:"Chandni Chowk to China", e:"🌙😱🇨🇳", a:[]},
+  {t:"Chandni Chowk to China", e:"🌙😱✌️🇨🇳", a:[]},
   {t:"Mr. India", e:"🕵🏻🇮🇳", a:[]},
-  {t:"Sholay", e:"🔫🐴🎭😈", a:[]},
-  {t:"Zindagi Na Milegi Dobara", e:"✈️🏍️🍷👬", a:["znmd"]},
+  {t:"Lagaan", e:"🏏🌾👳‍♂️🇬🇧", a:[]},
   {t:"Akele Hum Akele Tum", e:"☝🏻✋🏻☝🏻👉🏻", a:["k3g"]},
   {t:"Chak De India", e:"🏑🇮🇳👩‍🦱🏆", a:["chak de"]},
   {t:"Bajrangi Bhaijaan", e:"🙏🇮🇳🇵🇰👧", a:[]},
   {t:"Dangal", e:"🤼‍♀️👨‍👧‍👧🥇", a:[]},
   {t:"Queen", e:"✈️💃🎉👰", a:[]},
-  {t:"Andaz Apna Apna", e:"😂🤡💰👬", a:[]},
-  {t:"Barfi", e:"🤟😊💔🎩", a:["barfi!"]},
-  {t:"Gully Boy", e:"🎤🛺🔥🎧", a:[]},
   {t:"PK", e:"👽📿❓📻", a:[]},
-  {t:"Golmaal", e:"😂🏚️👬🤥", a:[]},
-  {t:"Jab We Met", e:"🚂👫💑🚉", a:[]},
-  {t:"Rockstar", e:"🎸💔🎤🕊️", a:[]},
-  {t:"Yeh Jawaani Hai Deewani", e:"🏔️💃🍻🎒", a:["yjhd"]},
-  {t:"Om Shanti Om", e:"🔥🎬♻️⭐", a:["osо"]},
-  {t:"Swades", e:"🚀🇮🇳🏡💡", a:[]},
-  {t:"Taare Zameen Par", e:"🎨👦😢✏️", a:["tzp"]},
-  {t:"Gadar", e:"🚂❤️🇮🇳🇵🇰", a:[]}
 ];
-
 
 const MAX_TRIES = 3;
 function norm(s){ return s.toLowerCase().replace(/[^a-z0-9 ]/g,"").replace(/\s+/g," ").trim(); }
@@ -345,6 +369,7 @@ const state = {
   lastWrongGuess: "",
   lastCorrect: false
 };
+
 
 const numPlayersCount = () => state.players.length;
 const setterIdx = () => state.turnPointer % numPlayersCount();
