@@ -2,8 +2,10 @@
 <html lang="en">
 
 <head>
+
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <title>Emoji Charades</title>
 
 <meta name="description" content="A two-to-six player pass-and-play game: turn a Bollywood movie into an emoji sequence and see who can guess it in three tries." />
@@ -11,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+
   :root {
     --bg-deep: #200610;
     --bg-card: #34091A;
@@ -27,7 +30,7 @@
 
 
   * { box-sizing: border-box; }
-
+  
   html, body {
     margin: 0;
     padding: 0;
@@ -159,9 +162,6 @@
     margin: 0;
   }
 
-
-
-
   .stage {
     background: linear-gradient(165deg, var(--bg-card), #2A0813 60%, #38091C);
     border-radius: 20px;
@@ -208,6 +208,7 @@
     font-weight: 700;
     box-shadow: 0 4px 14px rgba(255,201,60,0.25);
   }
+
   button.primary:hover { background: linear-gradient(135deg, #FFD75C, #FFB65C); }
   button.selected { border-color: var(--vermillion); box-shadow: 0 0 0 1px var(--vermillion) inset; color: var(--gold); }
   button.wide { width: 100%; }
@@ -229,6 +230,7 @@
   input[type="text"]:focus {
     outline: none;
     border-color: var(--gold);
+
     box-shadow: 0 0 0 2px rgba(242,183,5,0.25);
   }
 
@@ -369,7 +371,7 @@
     text-align: center;
     margin-top: 28px;
     font-size: 12px;
-    color: rgb(255, 178, 24);
+    color: rgb(240, 170, 29);
   }
 
   @media (max-width: 480px) {
@@ -406,7 +408,6 @@ const MOVIES = [
   {t:"Bajrangi Bhaijaan", e:"🙏🇮🇳🇵🇰👧", a:[]},
   {t:"Dangal", e:"🤼‍♀️👨‍👧‍👧🥇", a:[]},
   {t:"Queen", e:"✈️💃🎉👰", a:[]},
-  {t:"PK", e:"👽📿❓📻", a:[]},
 ];
 
 const MAX_TRIES = 3;
@@ -428,6 +429,7 @@ const state = {
 const numPlayersCount = () => state.players.length;
 const setterIdx = () => state.turnPointer % numPlayersCount();
 const guesserIdx = () => (state.turnPointer + 1) % numPlayersCount();
+
 
 function renderScoreboard(){
   const el = document.getElementById("scoreboard");
@@ -524,8 +526,11 @@ function renderPass(){
 
 function playTone(freqs, duration, type){
   try {
+
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
     freqs.forEach((freq, i) => {
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = type || "sine";
@@ -624,6 +629,7 @@ function finishRound(correct){
   if (correct) playCorrectSound(); else playWrongSound();
   render();
 }
+
 
 function renderResult(){
   const stage = document.getElementById("stage");
